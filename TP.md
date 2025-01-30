@@ -35,7 +35,13 @@ Nous allons créer les ressources suivantes à l'aide de Terraform :
 - un compte utilisateur de la base de données
 
 1. Commencer par créer le bucket GCS (Google Cloud Storage) qui servira à stocker le state Terraform.
+ Réponse : commande gcloud storage buckets create gs://terraform-devops-tp-eval --location=us-central1
+ Puis pour vérifier que le bucket à été crée : gcloud storage buckets list
+
 2. Définir les éléments de base nécessaires à la bonne exécution de terraform : utiliser l'exemple sur le [repo du cours](https://github.com/aballiet/devops-dauphine-2024/tree/main/exemple/cloudbuild-terraform) si besoin pour vous aider
+
+Réponse :  On crée un main.tf
+
 3. Afin de créer la base de données, utiliser la documentation [SQL Database](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_database) et enfin un [SQL User](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_user)
    1. Pour `google_sql_database`, définir `name="wordpress"` et `instance="main-instance"`
    2. Pour `google_sql_user`, définissez le comme ceci :
@@ -47,8 +53,34 @@ Nous allons créer les ressources suivantes à l'aide de Terraform :
       }
       ```
 4. Lancer `terraform plan`, vérifier les changements puis appliquer les changements avec `terraform apply`
+
+Réponse : on lance terraform init avant, puis plan et apply. 
+
 5. Vérifier que notre utilisateur existe bien : https://console.cloud.google.com/sql/instances/main-instance/users (veiller à bien séléctionner le projet GCP sur lequel vous avez déployé vos ressources)
+
+Réponse : on a bien notre utilisateur wordpress !
+![alt text](images/image.png)
+
 6. Rendez-vous sur https://console.cloud.google.com/sql/instances/main-instance/databases. Quelles sont les base de données présentes sur votre instance `main-instance` ? Quels sont les types ?
+
+Réponse : `main-instance` à les bases de données :
+
+| Nom de la base de données | Interclassement | Encodage | Type |
+|---------------------------|-----------------|----------|------|
+| information_schema         | utf8mb3_general_ci | utf8mb3 | Système |
+| mysql                      | utf8mb3_general_ci | utf8mb3 | Système |
+| performance_schema         | utf8mb4_0900_ai_ci | utf8mb4 | Système |
+| sys                        | utf8mb4_0900_ai_ci | utf8mb4 | Système |
+| wordpress                  | utf8mb3_general_ci | utf8mb3 | Utilisateur |
+
+On a déjà différentes bases de données système qui gère le fonctionnement de MySQL :
+   - `information_schema` : Contient des métadonnées sur toutes les bases de données et tables
+   - `mysql` : Stocke les informations des comptes utilisateurs et les permissions
+   - `performance_schema` : Utilisée pour surveiller et optimiser les performances de MySQL
+   - `sys` : Fournit des vues simplifiées pour mieux comprendre l’état et la performance du serveur
+
+Puis on a notre db crée à l'étape précédente : 
+   - `wordpress` : Base de données dédiée au site WordPress. Elle stocke les articles, utilisateurs, paramètres et plugins de WordPress.
 
 ## Partie 2 : Docker
 
