@@ -200,8 +200,14 @@ Notre but, ne l'oublions pas est de déployer wordpress sur Cloud Run puis Kuber
 1. Rendez vous sur : https://console.cloud.google.com/sql/instances/main-instance/connections/summary?
    L'instance de base données dispose d'une `Adresse IP publique`. Nous allons nous servir de cette valeur pour configurer notre image docker Wordpress qui s'y connectera.
 
+![alt text](images/image_publique.png)
+
 2. Reprendre le Dockerfile de la [Partie 2](#partie-2--docker) et le modifier pour que `WORDPRESS_DB_HOST` soit défini avec l'`Adresse IP publique` de notre instance de base de donnée.
+
 3. Reconstruire notre image docker et la pousser sur notre Artifact Registry en utilisant cloud build
+
+Réponse : Une fois le Dockerfile update on push notre nouvelle image gcloud builds submit --tag us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest . 
+Pas besoin de faire un docker build en local, Cloud Build va directement prendre en compte le nouveau Dockerfile et tout reconstruire 
 
 ### Déployer notre image docker sur Cloud Run
 
