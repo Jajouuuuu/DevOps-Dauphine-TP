@@ -290,8 +290,11 @@ Réponse : on voit la page d'accueil de WordPress : le déploiement a réussi et
    ```
    Give me the terraform code to deploy wordpress on kubernetes using kubernetes provider. I want to use MySQL.
    ```
+   Réponse : code dans le fichier new_main.tf
 
    4. Rendez vous sur l'adresse IP publique du service kubernetes Wordpress et vérifiez que Wordpress fonctionne 🔥
+
+
 
 
 ## BONUS : Partie 4
@@ -299,5 +302,15 @@ Réponse : on voit la page d'accueil de WordPress : le déploiement a réussi et
 1. Utiliser Cloud Build pour appliquer les changements d'infrastructure
 2. Quelles critiques du TP pouvez vous faire ? Quels sont les éléments redondants de notre configuration ?
    1. Quels paramètres avons nous dû recopier plusieurs fois ? Comment pourrions nous faire pour ne pas avoir à les recopier ?
+
+   Réponse : On répète plusieurs fois  le mot de passe de la base de données, l'URL de l'image Docker, et certains paramètres dans les différentes ressources Kubernetes dans Terraform, aussi on note le mdp en clair ce qui est un problème. On a l'URL de l'image utilisée à plusieurs endroits il est possible de centraliser cette valeur dans une variable afin de ne pas la dupliquer. Aussi les paramètres liés à la connexion à la base de données (comme le mot de passe et le nom d'utilisateur) sont dupliqués dans plusieurs ressources.
+
+   Pour ne pas les recopier on peut les mettre dans un fichier variables.tf et d'utiliser ces variables dans l’ensemble du code
+
    2. Quel outil pouvons nous utiliser pour déployer Wordpress sur Kubernetes ? Faites les changements nécessaires dans votre code Terraform.
+
+   Réponse : On peut utiliser helm. 
+
    3. Comment pourrions nous enlever le mot de passe en clair dans notre code Terraform ? Quelle ressource Kubernetes pouvons nous utiliser pour le stocker ? Faites les changements nécessaires dans votre code Terraform.
+
+   Réponse : On peut utiliser un Kubernetes Secret pour le mdp en clair. 

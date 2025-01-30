@@ -1,0 +1,30 @@
+steps:
+  # Étape 1 : Construire l'image Docker
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest', '.']
+
+  # Étape 2 : Pousser l'image Docker vers Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest']
+  
+  # Étape 3 : Initialiser Terraform
+  - name: 'hashicorp/terraform:light'
+    entrypoint: 'terraform'
+    args: ['init']
+    dir: '.'
+
+  # Étape 4 : Planifier Terraform (optionnel, tu peux omettre si tu veux l'appliquer directement)
+  - name: 'hashicorp/terraform:light'
+    entrypoint: 'terraform'
+    args: ['plan']
+    dir: '.'
+
+  # Étape 5 : Appliquer les changements Terraform pour déployer sur Kubernetes
+  - name: 'hashicorp/terraform:light'
+    entrypoint: 'terraform'
+    args: ['apply', '-auto-approve']
+    dir: '.'
+
+# Définir les images créées (optionnel si tu veux suivre l'image construite)
+images:
+  - 'us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest'
