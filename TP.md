@@ -213,6 +213,8 @@ Pas besoin de faire un docker build en local, Cloud Build va directement prendre
 
 1. Ajouter une ressource Cloud Run à votre code Terraform. Veiller à renseigner le bon tag de l'image docker que l'on vient de publier sur notre dépôt dans le champs `image` ainsi que le port utilisé par notre application.
 
+Réponse : pour cela on modifie notre main.tf
+
    Afin d'autoriser tous les appareils à se connecter à notre Cloud Run, on définit les ressources :
 
    ```hcl
@@ -240,20 +242,29 @@ Pas besoin de faire un docker build en local, Cloud Build va directement prendre
 
 2. Observer les journaux de Cloud Run (logs) sur : https://console.cloud.google.com/run/detail/us-central1/serveur-wordpress/logs.
    1. Véirifer la présence de l'entrée `No 'wp-config.php' found in /var/www/html, but 'WORDPRESS_...' variables supplied; copying 'wp-config-docker.php' (WORDPRESS_DB_HOST WORDPRESS_DB_PASSWORD WORDPRESS_DB_USER)`
+
+   ![alt text](images/entry_logs.png)
+
    2. Au bout de 5 min, que se passe-t-il ? 🤯🤯🤯
+
+   Réponse : Au bout de 5 min on a le timeout qui s'active (erreur de port d'écoute de wordpress par défaut qui est le port 80) 
+   Il faut donc faire un binding de port
+
    3. Regarder le resultat de votre commande `terraform apply` et observer les logs de Cloud Run
 
 3. Autoriser toutes les adresses IP à se connecter à notre base MySQL (sous réserve d'avoir l'utilisateur et le mot de passe évidemment)
    1. Pour le faire, exécuter la commande
       ```bash
-      gcloud sql instances patch main-instance \
-      --authorized-networks=0.0.0.0/0
+      gcloud sql instances patch main-instance --authorized-networks=0.0.0.0/0
       ```
 
 5. Accéder à notre Wordpress déployé 🚀
    1. Aller sur : https://console.cloud.google.com/run/detail/us-central1/serveur-wordpress/metrics?
    2. Cliquer sur l'URL de votre Cloud Run : similaire à https://serveur-wordpress-oreldffftq-uc.a.run.app
    3. Que voyez vous ? 🙈
+
+Réponse : on voit la page d'accueil de WordPress : le déploiement a réussi et la base de données est bien connectée.
+![alt text](images/wordpress.png)
 
 
 6. Afin d'avoir un déploiement plus robuste pour l'entreprise et économiser les coûts du service CloudSQL, nous allons déployer Wordpress sur Kubernetes
