@@ -1,0 +1,7 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest']
+images:
+  - 'us-central1-docker.pkg.dev/devops-tp-eval/website-tools/wordpress:latest'

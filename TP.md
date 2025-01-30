@@ -35,8 +35,9 @@ Nous allons créer les ressources suivantes à l'aide de Terraform :
 - un compte utilisateur de la base de données
 
 1. Commencer par créer le bucket GCS (Google Cloud Storage) qui servira à stocker le state Terraform.
- Réponse : commande gcloud storage buckets create gs://terraform-devops-tp-eval --location=us-central1
- Puis pour vérifier que le bucket à été crée : gcloud storage buckets list
+
+Réponse : commande gcloud storage buckets create gs://terraform-devops-tp-eval --location=us-central1
+Puis pour vérifier que le bucket à été crée : gcloud storage buckets list
 
 2. Définir les éléments de base nécessaires à la bonne exécution de terraform : utiliser l'exemple sur le [repo du cours](https://github.com/aballiet/devops-dauphine-2024/tree/main/exemple/cloudbuild-terraform) si besoin pour vous aider
 
@@ -88,39 +89,105 @@ Wordpress dispose d'une image Docker officielle disponible sur [DockerHub](https
 
 1. Récupérer l'image sur votre machine (Cloud Shell)
 
+Réponse : docker pull wordpress
+On vérifie qu'on à bien notre image de téléchargé en faisant docker images 
+![alt text](images/docker_image.png)
+
 2. Lancer l'image docker et ouvrez un shell à l'intérieur de votre container:
+
+Réponse : on run : docker run -d --name wp-container wordpress
+Valeur de retour : f71752cf6e5500898346fd4546b03be0429fd0cc4d7f85d29b0ea31a2376d895
+On vérifie que notre container est bien lancé avec docker ps
+![alt text](images/run_docker.png)
+On lance un shell à l'intérieur du containeur : docker exec -it wp-container /bin/bash
+
    1. Quel est le répertoire courant du container (WORKDIR) ?
+
+   Réponse : Une fois le shell du container lancé on run pwd et on obtient le répertoire courant : /var/www/html 
+   qui est bien le WORKDIR de notre image wordpress
+
    2. Quelles sont les différents fichiers html contenu dans WORKDIR ?
+
+   Réponse : on peut faire la commande ls -l *.html pour avoir tous les fichiers html du workdir, on a uniquement le readme.html, le reste des fichiers sont des fichiers php (on voit ça avec la commande ls -l)
+
+   ![alt text](images/workdir.png)
 
 3. Supprimez le container puis relancez en un en spécifiant un port binding (une correspondance de port).
 
+   Réponse : on sort du shell avec la commande exit, puis on arrête le conainer avec la commande docker stop wp-container 
+   et on le supprime avec docker rm wp-container
+   On vérifie avec docker ps que nous n'avon plus rien en court d'exécution
+
    1. Vous devez pouvoir communiquer avec le port par défaut de wordpress : **80** (choisissez un port entre 8000 et 9000 sur votre machine hôte => cloudshell)
+
+   Réponse : pour cela on run la commande docker run -d --name wp-container -p 8090:80 wordpress
+   ![alt text](images/port_binding.png)
 
    2. Avec la commande `curl`, faites une requêtes depuis votre machine hôte à votre container wordpress. Quelle est la réponse ? (il n'y a pas piège, essayez sur un port non utilisé pour constater la différence)
 
+   Réponse : il n'y a pas de valeur de réponse lorsque qu'on effectue curl http://localhost:8090 mais lorsque nous essayons un autre port curl http://localhost:8080 nous avons la réponse 'curl: (7) Failed to connect to localhost port 8080 after 0 ms: Couldn't connect to server'
+
    3. Afficher les logs de votre container après avoir fait quelques requêtes, que voyez vous ?
+
+   Réponse : après quelques requêtes on peut constater dans les logs que nous avons bien envoyé une réquête au server 
+   ![alt text](images/logs.png)
+
    4. Utilisez l'aperçu web pour afficher le résultat du navigateur qui se connecte à votre container wordpress
       1. Utiliser la fonction `Aperçu sur le web`
         ![web_preview](images/wordpress_preview.png)
       2. Modifier le port si celui choisi n'est pas `8000`
       3. Une fenètre s'ouvre, que voyez vous ?
 
+   Réponse : On tombe bien sur la page html de wordpress (qui est l'ux/ui des fichiers php qu'on a vu plus tôt dans le workdir)
+   ![alt text](images/wordpress_ux.png)
+
 4. A partir de la documentation, remarquez les paramètres requis pour la configuration de la base de données.
 
+Réponse : On note les variables d’environnement requises pour que WordPress puisse se connecter à MySQL
+- WORDPRESS_DB_HOST → Adresse du serveur MySQL
+- WORDPRESS_DB_USER → Nom d'utilisateur MySQL
+- WORDPRESS_DB_PASSWORD → Mot de passe MySQL
+- WORDPRESS_DB_NAME → Nom de la base de données WordPress
+
 5. Dans la partie 1 du TP (si pas déjà fait), nous allons créer cette base de donnée. Dans cette partie 2 nous allons créer une image docker qui utilise des valeurs spécifiques de paramètres pour la base de données.
+
    1. Créer un Dockerfile
+
    2. Spécifier les valeurs suivantes pour la base de données à l'aide de l'instruction `ENV` (voir [ici](https://stackoverflow.com/questions/57454581/define-environment-variable-in-dockerfile-or-docker-compose)):
         - `WORDPRESS_DB_USER=wordpress`
         - `WORDPRESS_DB_PASSWORD=ilovedevops`
         - `WORDPRESS_DB_NAME=wordpress`
         - `WORDPRESS_DB_HOST=0.0.0.0`
+
    3. Construire l'image docker.
+
+   Réponse : docker build -t wordpress .
+
    4. Lancer une instance de l'image, ouvrez un shell. Vérifier le résultat de la commande `echo $WORDPRESS_DB_PASSWORD`
+
+   Réponse : on run l'image : docker run -d --name custom-wp-container wordpress 
+   Puis on lance un shell docker exec -it custom-wp-container /bin/bash
+   Et on récupère bien le password de notre db 
+   ![alt text](images/password_echo.png)
 
 6. Pipeline d'Intégration Continue (CI):
    1. Créer un dépôt de type `DOCKER` sur artifact registry (si pas déjà fait, sinon utiliser celui appelé `website-tools`)
+
+   Réponse : normalement déjà fait dans le terraform ça donc on check avec la commande : gcloud artifacts repositories list
+   ![alt text](images/website-tools.png)
+
    2. Créer une configuration cloudbuild pour construire l'image docker et la publier sur le depôt Artifact Registry
+
+   Réponse : On tag notre image 
+   docker tag wordpress us-central1-docker.pkg.dev/$(gcloud config get-value project)/website-tools/wordpress:latest
+   docker push us-central1-docker.pkg.dev/$(gcloud config get-value project)/website-tools/wordpress:latest
+   On vérifie que notre image est bien stocké : 
+   gcloud artifacts docker images list us-central1-docker.pkg.dev/$(gcloud config get-value project)/website-tools
+
    3. Envoyer (`submit`) le job sur Cloud Build et vérifier que l'image a bien été créée
+
+   Réponse : On crée cloudbuild.yaml et on pourra submit gcloud builds submit --config cloudbuild.yaml .
+   ![alt text](images/build_cloudbuild.png)
 
 ## Partie 3 : Déployer Wordpress sur Cloud Run puis Kubernetes 🔥
 
